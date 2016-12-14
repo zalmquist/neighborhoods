@@ -9,31 +9,34 @@ In this workshop we will be introducing you to some of the GIS-style capabilitie
 ## First Step Dowonload R
 
 
-
-
 * To start download [R](https://cran.r-project.org/)
 * You will need to select your operating system version:
 <center>
 <div style="width:500px; height=400px">
-![](figures/RStudioGit1.PNG)
+![](figures/CRAN.png)
+</div>
+</center>
+<center>
+<div style="width:500px; height=400px">
+![](figures/CRAN_OSX.png)
 </div>
 </center>
 * I am using OS X, so the example will follow for Mac, but Windows is similar
 <center>
 <div style="width:500px; height=400px">
-![](figures/RStudioGit1.PNG)
+![](figures/CRAN_Windows.png)
 </div>
 </center>
 * Choose the latest version 3.3.X
 <center>
 <div style="width:500px; height=400px">
-![](figures/RStudioGit1.PNG)
+![](figures/R3_3_x.png)
 </div>
 </center>
 * Now we will download a populat IDE (Integrated Development Enviroment) [RStudio](https://www.rstudio.com/)
 <center>
 <div style="width:500px; height=400px">
-![](figures/RStudioGit1.PNG)
+![](figures/Rstudio.png)
 </div>
 </center>
 
