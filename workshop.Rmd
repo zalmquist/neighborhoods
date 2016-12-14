@@ -12,7 +12,7 @@ output:
 * Open R-Studio -- See [Set up](Connecting.html)
     * If you want to produce a pdf from th RMARKDOWN you will need to install [LaTex](https://www.latex-project.org/get/)
 * Once you have connected R-Studio to github and downloaded the workshop:
-    * Open up [mpls_neighborhoods]()
+    * Open up [mpls_neighborhoods.Rmd](https://github.com/zalmquist/neighborhoods/blob/master/Minnesota_Neighborhoods/mpls_neighborhoods.Rmd)
     * Work through the lab, ask questions on Moodle
     * This lab requires you to install packages
     ```{r,eval=FALSE}
