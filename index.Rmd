@@ -36,4 +36,17 @@ Minneapolis, MN 55455 <br/>
 &nbsp;<br/>
 </div>
 
-## Details
+## R for Mapping and Analysis of Neighborhood Data
+
+This workshop is written for SOC 3090: Sociology of Neighborhoods at the University of Minnesota. This workshop will focus on data management, plotting and simple spatial analysis of neighborhood level data. All case studies will be of Minneapolis, MN. The workshop will introduced basic US Census data (and geographic levels) and other admistrative data (e.g., neighborhoods or school districts). The basic structure of this workshop is as follows:
+
+* Install R
+* Install RStudio
+* Use RStudio and Github to download all workshop materials
+* Follow along workshop RMarkdown files
+* Do some simple plotting and analysis on your own!
+
+
+
+
+

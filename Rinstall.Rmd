@@ -1,0 +1,41 @@
+---
+title: "Set Up for the Workshop"
+author: "Zack W Almquist (University of Minnesota)"
+output: html_document
+---
+
+In this workshop we will be introducing you to some of the GIS-style capabilities of R and basic introduction to spatial models. We will, also, introduce you to acquiring spatial data online with a focus on [US Census](http://www.census.gov) data. To use the tutorials and other material we will use a combination of [R](https://cran.r-project.org/), [RStudio](http://www.RStudio.com), and [Github](http://www.github.com).
+
+## First Step Dowonload R
+
+
+
+
+* To start download [R](https://cran.r-project.org/)
+* You will need to select your operating system version:
+<center>
+<div style="width:500px; height=400px">
+![](figures/RStudioGit1.PNG)
+</div>
+</center>
+* I am using OS X, so the example will follow for Mac, but Windows is similar
+<center>
+<div style="width:500px; height=400px">
+![](figures/RStudioGit1.PNG)
+</div>
+</center>
+* Choose the latest version 3.3.X
+<center>
+<div style="width:500px; height=400px">
+![](figures/RStudioGit1.PNG)
+</div>
+</center>
+* Now we will download a populat IDE (Integrated Development Enviroment) [RStudio](https://www.rstudio.com/)
+<center>
+<div style="width:500px; height=400px">
+![](figures/RStudioGit1.PNG)
+</div>
+</center>
+
+
+
