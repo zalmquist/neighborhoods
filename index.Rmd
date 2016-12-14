@@ -7,29 +7,14 @@ output:
 
 <div class ="wrapper">
 <div class="left">
-![](images/almquistHeadShot.jpg)
+![](images/diff_fest3.png)
 </div>
 
 <div class="left">
-<b>Department of Sociology</b> </br>
-University of Minnesota<br/>
-909 Social Sciences Building<br/>
-267 19th Avenue South<br/>
-Minneapolis, MN 55455 <br/>
-612-624-1895 (Sociology)<br/> 
-612-625-1024 (Statistics)<br/> 
-<a href="mailto:email:almquist@umn.edu">almquist@umn.edu</a><br /> 
-</div>
-
-<div class="left">
-<b>School of Statistics</b> <br/>
-University of Minnesota <br/>
-313 Ford Hall <br/>
-224 Church Street SE <br/>
-Minneapolis, MN 55455 <br/>
-&nbsp;<br/>
-&nbsp;<br/>
-&nbsp;<br/>
+<b>Soc 3090: Sociology of Neighborhood </b>
+<br>
+Introduction to R
+</br>
 </div>
 </div>
 <div class="wrapper">
