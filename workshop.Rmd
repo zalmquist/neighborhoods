@@ -1,0 +1,26 @@
+---
+title: "Mpls R Neighborhood Workshop"
+output:
+  html_document:
+    toc: false
+---
+
+## Step 1
+
+* Install [R](https://cran.r-project.org/), see [R Install](Rinstall.html)
+* Install [R-Studio](https://cran.r-project.org/), see [R Install](Rinstall.html)
+* Open R-Studio -- See [Set up](Connecting.html)
+    * If you want to produce a pdf from th RMARKDOWN you will need to install [LaTex](https://www.latex-project.org/get/)
+* Once you have connected R-Studio to github and downloaded the workshop:
+    * Open up [mpls_neighborhoods]()
+    * Work through the lab, ask questions on Moodle
+    * This lab requires you to install packages
+    ```{r,eval=FALSE}
+    install.packages("NAMEOFPACKAGE")
+    ```
+    * Loading packages in R
+    ```{r}
+    library(ggmap)
+    qmap(location="minneapolis",zoom=10)
+    ```
+
