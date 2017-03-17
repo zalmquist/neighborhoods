@@ -1,0 +1,45 @@
+---
+title: "R Lab"
+author: "YOUR NAME HERE (University of Minnesota)"
+date: "DATE"
+output: html_document
+---
+
+# Preliminaries
+```{r,include=FALSE}
+## Useful http://www.stat.cmu.edu/~cshalizi/rmarkdown/
+require(knitr)
+# Set knitr options for knitting code into the report:
+# - Don't print out code (echo)
+# - Save results so that code blocks aren't re-run unless code changes (cache),
+# _or_ a relevant earlier code block changed (autodep), but don't re-run if the
+# only thing that changed was the comments (cache.comments)
+# - Don't clutter R output with messages or warnings (message, warning)
+  # This _will_ leave error messages showing up in the knitted report
+opts_chunk$set(echo=TRUE,
+               cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+               message=FALSE, warning=FALSE,tidy=TRUE)
+options(width=60)
+```
+
+```{r,include=FALSE}
+library(UScensus2010)
+library(UScensus2010cdp)
+library(ggplot2)
+library(ggmap)
+```
+
+
+## Plot Your Neighborhood Using ggplot2 and ggmap
+
+## Add Features such as Crime or Education
+
+## Attempt a Spatialy Weighted Regression
+
+## Write up a discussion of what you have learned
+
+
+
+
+
+

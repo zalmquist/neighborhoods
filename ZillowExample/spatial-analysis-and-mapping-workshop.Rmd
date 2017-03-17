@@ -1,0 +1,160 @@
+---
+title: "Spatial Analysis and Mapping Workshop"
+author: "Zack W Almquist (University of Minnesota)"
+date: "November 8, 2016"
+output: pdf_document
+---
+
+# Preliminaries
+```{r,include=FALSE}
+## Useful http://www.stat.cmu.edu/~cshalizi/rmarkdown/
+require(knitr)
+# Set knitr options for knitting code into the report:
+# - Don't print out code (echo)
+# - Save results so that code blocks aren't re-run unless code changes (cache),
+# _or_ a relevant earlier code block changed (autodep), but don't re-run if the
+# only thing that changed was the comments (cache.comments)
+# - Don't clutter R output with messages or warnings (message, warning)
+  # This _will_ leave error messages showing up in the knitted report
+opts_chunk$set(echo=TRUE,
+               cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+               message=FALSE, warning=FALSE,tidy=TRUE)
+options(width=60)
+```
+
+
+This workshop will involve a large collection of R packages and will provide a basic run through for accessing spatial data, spatial plotting and integrating with the 'ggplot' packages. Last we will perform some simple spatial statistics.
+
+## From CRAN
+
+### Required
+
+```{r, eval=FALSE}
+install.packages("sp")
+install.packages("rgeos")
+install.packages("maptools")
+install.packages("spdep")
+install.packages("ggplot2")
+install.packages("devtools")
+install.packages("plyr")
+```
+
+### Recommended
+```{r, eval=FALSE}
+install.packages("rgdal")
+```
+
+## US Census Packages
+In this workshop we will use a series of different packages, including the US Census suite of software. The most recent versions are available <https://r-forge.r-project.org/R/?group_id=2022>. We will need only three of the packages:
+
+```{r, eval=FALSE}
+install.packages("UScensus2010", repos="http://R-Forge.R-project.org")
+install.packages("UScensus2010county", repos="http://R-Forge.R-project.org")
+install.packages("UScensus2010tract", repos="http://R-Forge.R-project.org")
+install.packages("UScensus2010cdp", repos="http://R-Forge.R-project.org")
+```
+
+
+### Load the US Census packages
+```{r}
+library(UScensus2010)
+library(UScensus2010county)
+data(washington.county10)
+```
+
+### Plot Washington Counties
+
+```{r, fig.width = 4.5, fig.height = 4.5,fig.align='center'} 
+plot(washington.county10)
+```
+
+## Zillow Neighborhoods
+
+We are going to use some data from <http://zillow.com> which will allow us to work with the neighborhoods of Seattle! You can download the neighborhoods directly at <http://www.zillow.com/howto/api/neighborhood-boundaries.htm>.
+
+### Package requirements
+This function requires 'rgdal', if you were not able to instal 'rgdal' the data file is provided on the github repository as 'seattle_nb.rda'.
+
+```{r}
+require(rgdal)
+```
+
+### Function for downloading Zillow Neighborhoods
+```{r}
+readZillow_NB<-function(address,state,city=NULL){
+  fileName<-paste(address,"ZillowNeighborhoods-",state,".zip",sep="") ##full address of zip file
+  zipFile<-paste("ZillowNeighborhoods-",state,".zip",sep="")
+  zipdir <- tempfile() ### Create temp file
+  dir.create(zipdir) ### Create a folder in the temp file
+  download.file(fileName,destfile=paste(zipdir,zipFile,sep="/"))
+  unzip(paste(zipdir,zipFile,sep="/"), exdir=zipdir)
+  files <- list.files(zipdir)
+  sp_temp<-rgdal::readOGR(dsn=zipdir,layer=strsplit(files[grep("shp",paste(files,"0",sep=""))],"\\.")[[1]][1])
+  if(!is.null(city)){
+  sp_temp_city<-sp_temp[sp_temp$CITY==city,]
+  return(sp_temp_city)
+  }
+  sp_temp
+}
+```
+    
+### Zillow Logo
+
+Zillow requires that you add their logo to any plot using their data. Below is a quick script for doing such a task. This requires the package 'caTools'.
+
+```{r, eval=FALSE}
+install.packages('caTools')
+install.packages('RCurl')
+```
+
+```{r,fig.width = 3, fig.height = 3,fig.align='center'}
+library(caTools)
+
+zillowurl<-"http://www.zillowstatic.com/vstatic/70a941d/static/logos/Zillow_Logo_HoodsProvided_RightAligned.gif"
+zillow_logo <-read.gif(zillowurl,flip=TRUE)
+
+## Plot the logo!
+image(zillow_logo$image, col=zillow_logo$col, breaks=(0:length(zillow_logo$col))-0.5, asp=.15,useRaster=TRUE,axes = FALSE)
+```
+
+
+### Seattle Neighborhoods
+```{r}  
+base_address<-"http://www.zillow.com/static/shp/"
+state<-"WA"
+city<-"Seattle"
+seattle_nb<-readZillow_NB(base_address,state,city)
+```
+
+### Plot Seattle Neighborhoods
+
+```{r, fig.width = 4.5, fig.height = 4.5,fig.align='center'} 
+par(mfrow=c(1,1),mar=c(0, 0, 0, 0) + 0.1)
+plot(seattle_nb)
+par(fig=c(.25, 3.3, .4, 2.5)/10,new=TRUE)
+image(zillow_logo$image, col=zillow_logo$col, breaks=(0:length(zillow_logo$col))-0.5, asp=.15,useRaster=TRUE,axes = FALSE)
+```
+
+# Plot the US using ggplot
+
+```{r,cache=FALSE} 
+library(UScensus2010)
+library(ggplot2)
+library(dplyr)
+library(plyr)
+data(states)
+cont_states<-states[!(states$acronym%in%c("HI","AK")),]
+cont_states@data$id <- rownames(cont_states@data)
+states.points = fortify(cont_states, region="id")
+states.df = join(states.points, cont_states@data, by="id")
+```
+
+```{r, fig.width = 4.5, fig.height = 4.5,fig.align='center'} 
+ggplot() +
+  geom_polygon(data = states.df, 
+               aes(x = long, y = lat, group = group, fill = pop1970-pop1960), 
+               color = "black", size = 0.25) + 
+  coord_map()
+```
+
+

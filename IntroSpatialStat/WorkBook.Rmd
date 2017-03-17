@@ -1,0 +1,224 @@
+---
+title: "WorkBook"
+author: "Zack W Almquist (University of Minnesota)"
+date: "November 9, 2016"
+output: pdf_document
+---
+
+# Preliminaries
+In the following component of this workshop we will attempt to explore and use the packages and R files to accomplish tasks. The first thing we are going to do, however, is to explore the 'ggmap' and 'openmaps' R packages so that we can bring into our GIS tools the ability plot street and aerial maps.
+
+```{r,include=FALSE}
+## Useful http://www.stat.cmu.edu/~cshalizi/rmarkdown/
+require(knitr)
+# Set knitr options for knitting code into the report:
+# - Don't print out code (echo)
+# - Save results so that code blocks aren't re-run unless code changes (cache),
+# _or_ a relevant earlier code block changed (autodep), but don't re-run if the
+# only thing that changed was the comments (cache.comments)
+# - Don't clutter R output with messages or warnings (message, warning)
+  # This _will_ leave error messages showing up in the knitted report
+opts_chunk$set(echo=TRUE,
+               cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+               message=FALSE, warning=FALSE,tidy=TRUE)
+options(width=60)
+```
+
+# ggmap package
+
+```{r, eval=FALSE}
+install.packages("ggmap")
+```
+
+
+```{r, cache=FALSE}
+library(ggplot2)
+library(ggmap)
+library(caTools)
+library(sp)
+library(rgdal)
+library(rgeos)
+library(spdep)
+library(dplyr)
+library(plyr)
+library(readr)
+library(UScensus2010)
+library(UScensus2010cdp)
+```
+
+```{r, cache=FALSE,fig.width = 4.5, fig.height = 4.5,fig.align='center'}
+qmap(location = "University of Washington, Seattle, WA")
+qmap(location = "University of Washington, Seattle, WA", zoom = 14)
+qmap(location = "University of Washington, Seattle, WA", zoom = 14, source = "osm")
+
+```
+
+# Overlay
+
+Let's overlay Zillow's neighborhoods onto google map graphics. 
+
+```{r, include=FALSE}
+readZillow_NB<-function(address,state,city=NULL){
+  fileName<-paste(address,"ZillowNeighborhoods-",state,".zip",sep="") ##full address of zip file
+  zipFile<-paste("ZillowNeighborhoods-",state,".zip",sep="")
+  zipdir <- tempfile() ### Create temp file
+  dir.create(zipdir) ### Create a folder in the temp file
+  download.file(fileName,destfile=paste(zipdir,zipFile,sep="/"))
+  unzip(paste(zipdir,zipFile,sep="/"), exdir=zipdir)
+  files <- list.files(zipdir)
+  sp_temp<-rgdal::readOGR(dsn=zipdir,layer=strsplit(files[grep("shp",paste(files,"0",sep=""))],"\\.")[[1]][1])
+  if(!is.null(city)){
+  sp_temp_city<-sp_temp[sp_temp$CITY==city,]
+  return(sp_temp_city)
+  }
+  sp_temp
+}
+```
+
+```{r}
+seatle_map<-qmap(location = "Seattle, WA", zoom = 11)
+base_address<-"http://www.zillow.com/static/shp/"
+state<-"WA"
+city<-"Seattle"
+seattle_nb<-readZillow_NB(base_address,state,city)
+
+zillowurl<-"http://www.zillowstatic.com/vstatic/70a941d/static/logos/Zillow_Logo_HoodsProvided_RightAligned.gif"
+zillow_logo <-read.gif(zillowurl,flip=TRUE)
+```
+
+```{r,fig.width = 4.5, fig.height = 4.5,fig.align='center'}
+seattle_nb <- spTransform(seattle_nb, CRS("+proj=longlat +datum=WGS84"))
+Neighborhoods <- fortify(seattle_nb)
+LabelData<-data.frame(coordinates(seattle_nb),NAME=seattle_nb$NAME,stringsAsFactors =FALSE)
+
+seatle_map + 
+  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', 
+               size=.3,color='red', data=Neighborhoods, alpha=0)+
+  geom_text(aes(x = X1, y = X2,label = NAME),size=2,data=LabelData)
+```
+
+```{r,fig.width = 2, fig.height = 2,fig.align='center',echo=FALSE}
+image(zillow_logo$image, col=zillow_logo$col, breaks=(0:length(zillow_logo$col))-0.5, asp=.15,useRaster=TRUE,axes = FALSE)
+```
+
+```{r,fig.width = 4.5, fig.height = 4.5,fig.align='center'}
+seatle_map2<-qmap(location = "Seattle, WA", zoom = 14)
+
+seatle_map2 + 
+  geom_polygon(aes(x=long, y=lat, group=group), fill='grey', 
+               size=.3,color='red', data=Neighborhoods, alpha=0)+
+  geom_text(aes(x = X1, y = X2,label = NAME),size=4,data=LabelData)
+```
+
+```{r,fig.width = 2, fig.height = 2,fig.align='center',echo=FALSE}
+image(zillow_logo$image, col=zillow_logo$col, breaks=(0:length(zillow_logo$col))-0.5, asp=.15,useRaster=TRUE,axes = FALSE)
+```
+
+### Geo Code
+
+Use the above code and google to geocode your favorite locations into the map. For example add your favorite coffeeshop, park or walk. Be creative!
+
+```{r}
+## Your Code Here
+```
+
+### Add Census Data
+
+Go back to the ACS tutorial and look over the code and possible variables. Find one that you are interested in for Seattle. Download the data at the tract level and plot it ontop of the ggmap object.
+
+```{r}
+## Your Code Here
+```
+
+## Spatial Statistics
+
+To explore some spatial statistics models we are going to combine ACS data with AirBnB through <http://http://insideairbnb.com/>. Seattle on 04 January, 2016.
+
+### Code for ACS
+```{r,eval=FALSE}
+key<-"Your Key Here"
+acsvariables<-c(
+                "B06010_023E", #	Born in other state in the United States:
+                "B07013_002E", #	Householder lived in owner-occupied housing units
+                "B07013_003E", #	Householder lived in renter-occupied housing units
+                "B17001F_002E") #	Income in the past 12 months below poverty level:	                                 # B17001F. POVERTY STATUS IN THE PAST 12 MONTHS BY 
+                                # SEX BY AGE (SOME OTHER RACE ALONE)
+
+WA_ACS<-CensusAPI2010Spatial(acsvariables,state.fips=c("53"),
+level="tract",key,summaryfile="ACS")
+```
+
+### Airbnb and ACS data
+```{r,cache=FALSE,eval=FALSE}
+load("data/airbnb.rda")
+load("data/wa_acs.rda")
+
+airbnb_sp<-SpatialPointsDataFrame(cbind(airBNB_seattle$longitude,
+                                        airBNB_seattle$latitude),
+                                        data=as.data.frame(airBNB_seattle),
+                                        proj4string=CRS(proj4string(WA_ACS)))
+
+airbnbPerTract<-sapply(1:length(WA_ACS@polygons),
+function(x){
+temp<-over(airbnb_sp,WA_ACS[x,])
+sum(!is.na(temp[,1]))
+})
+
+WA_ACS$aBNBperTract<-airbnbPerTract
+
+## Generate Seattle Only Tracts
+data(washington.cdp10)
+seattle<-washington.cdp10[washington.cdp10$name=="Seattle",]
+seattle_tract<-gIntersection(WA_ACS, seattle, byid = TRUE,drop_not_poly=TRUE)
+data<-over(seattle_tract,WA_ACS)
+rownames(data)<-sapply(slot(seattle_tract, "polygons"), function(i) slot(i, "ID"))
+seattle_tract<-SpatialPolygonsDataFrame(seattle_tract,data=data)
+```
+
+```{r,cache=FALSE}
+load("data/seattle_tract.rda")
+seattle_tract@data$id <- rownames(seattle_tract@data)
+seattle_tract.points <- fortify(seattle_tract)
+seattle_tract.df <- join(seattle_tract.points, seattle_tract@data, by="id")
+```
+
+### ggplot of the data
+```{r,fig.width = 6, fig.height = 6,fig.align='center'}
+ggplot() +
+  geom_polygon(data = seattle_tract.df, 
+               aes(x = long, y = lat, group = group, fill = aBNBperTract), 
+               color = "black", size = 0.25) + coord_map()
+```
+
+### Simple analysis
+
+```{r}
+seattle_proj<-spTransform(seattle_tract, 
+                          CRS("+proj=merc +zone=10s +ellps=WGS84 +datum=WGS84"))
+seattle_proj$area<-areaPoly(seattle_proj)
+seattle_proj$den<-seattle_proj$P0010001/seattle_proj$area
+
+summary(lm1<-lm(aBNBperTract~den,data=seattle_proj))
+summary(lm2<-lm(aBNBperTract~den,weights = I(1/area),data=seattle_proj))
+summary(lm3<-lm(aBNBperTract~den+B06010_023E,weights = I(1/area),data=seattle_proj))
+
+sapply(list(lm1,lm2,lm3),AIC)
+
+
+nb<-poly2nb(seattle_proj)
+any(card(nb) == 0)
+nbw<-nb2listw(nb,style="B",zero.policy=TRUE) # B is the basic binary coding
+lm.morantest(lm3,nbw,zero.policy=TRUE)
+lm.morantest(lm2,nbw,zero.policy=TRUE)
+
+summary(alm1<-spautolm(aBNBperTract~den,data=seattle_proj,listw=nbw,family="SAR"))
+summary(alm2<-spautolm(aBNBperTract~den+B06010_023E,data=seattle_proj,listw=nbw,family="SAR"))
+
+sapply(list(alm1,alm2),AIC)
+
+LR.sarlm(alm1,alm2) #http://rpackages.ianhowson.com/rforge/spdep/man/LR.sarlm.html
+```
+
+
+
+

@@ -1,0 +1,14 @@
+unnamed-chunk-2	install.packages
+unnamed-chunk-3	install.packages
+unnamed-chunk-4	install.packages
+unnamed-chunk-5	data	library
+unnamed-chunk-6	plot	washington.county10
+unnamed-chunk-7	require
+unnamed-chunk-8	::	!	[[	==	$	dir.create	download.file	grep	if	is.null	list.files	paste	return	strsplit	tempfile	unzip
+unnamed-chunk-9	install.packages
+unnamed-chunk-10	$	image	length	library	read.gif
+unnamed-chunk-11	readZillow_NB
+unnamed-chunk-12	$	c	image	length	par	plot	seattle_nb	zillow_logo
+unnamed-chunk-13	$	c	image	length	par	plot	seattle_nb	zillow_logo
+unnamed-chunk-14	aes	coord_map	geom_polygon	ggplot	group	lat	long	pop1960	pop1970	states.df
+unnamed-chunk-15	aes	coord_map	geom_polygon	ggplot	group	lat	long	pop1960	pop1970	states.df

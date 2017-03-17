@@ -1,0 +1,17 @@
+base
+methods
+datasets
+utils
+grDevices
+graphics
+stats
+knitr
+sp
+maptools
+foreign
+rjson
+rgeos
+UScensus2010
+UScensus2010cdp
+ggplot2
+ggmap

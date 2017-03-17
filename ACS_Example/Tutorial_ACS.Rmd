@@ -1,0 +1,158 @@
+---
+title: "ACS Data Through US Census Packages"
+author: "Zack W Almquist (University of Minnesota)"
+date: "November 8, 2016"
+output: pdf_document
+---
+
+# Preliminaries
+```{r,include=FALSE}
+## Useful http://www.stat.cmu.edu/~cshalizi/rmarkdown/
+require(knitr)
+# Set knitr options for knitting code into the report:
+# - Don't print out code (echo)
+# - Save results so that code blocks aren't re-run unless code changes (cache),
+# _or_ a relevant earlier code block changed (autodep), but don't re-run if the
+# only thing that changed was the comments (cache.comments)
+# - Don't clutter R output with messages or warnings (message, warning)
+  # This _will_ leave error messages showing up in the knitted report
+opts_chunk$set(echo=TRUE,
+               cache=TRUE, autodep=TRUE, cache.comments=FALSE,
+               message=FALSE, warning=FALSE,tidy=TRUE)
+options(width=60)
+```
+
+```{r,eval=FALSE}
+install.packages("automap")
+```
+
+# Packages
+```{r,cache=FALSE}
+library(UScensus2010)
+library(UScensus2010county)
+library(UScensus2010tract)
+library(ggplot2)
+library(dplyr)
+library(plyr)
+```
+
+# ACS Data via US Census API
+
+For this part of the workshop you will need to obtain a Census API Key: <http://api.census.gov/data/key_signup.html>. You can find out what variables 
+are available at <http://api.census.gov/data/2014/acs5/variables.html> for the 
+ACS.
+
+```{r}
+key=""
+```
+
+```{r}
+sf1variables<-c("P0010001","P0030002", "P0030003","P0030004","P0030005")
+
+#men, women, # bachelors deg, grad or prof deg, gini index, median income
+acsvariables<-c("B00001_001E","B01001_002E", "B01001_026E","B06009_005E", "B06009_005E","B19083_001E","B06011_002E")
+
+## SF1
+WA_Census_Variables<-CensusAPI2010(sf1variables,state.fips=c("53"),
+level="county",key,summaryfile="sf1")
+
+head(WA_Census_Variables)
+
+## ACS
+WA_Census_Variables2<-CensusAPI2010(acsvariables,state.fips=c("53"),
+level="county",key,summaryfile="ACS")
+
+head(WA_Census_Variables2)
+
+```
+
+## County Level Data
+```{r}
+## ACS
+WA_Census_Spatial<-CensusAPI2010Spatial(acsvariables,state.fips=c("53"),
+level="county",key,summaryfile="ACS")
+```
+
+
+```{r,cache=FALSE} 
+WA_Census_Spatial@data$id <- rownames(WA_Census_Spatial@data)
+WA_Census_Spatial.points = fortify(WA_Census_Spatial, region="id")
+WA_Census_Spatial.df = join(WA_Census_Spatial.points, WA_Census_Spatial@data, by="id")
+```
+
+```{r, fig.width = 6 , fig.height = 6 ,fig.align='center'} 
+ggplot() +
+  geom_polygon(data = WA_Census_Spatial.df, 
+               aes(x = long, y = lat, group = group, fill = B06009_005E ), 
+               color = "black", size = 0.25) + coord_map()+ggtitle("Bachelor Degree Holders, 2010")
+```
+
+
+## Tract Level Data
+```{r}
+## ACS
+WA_Census_Spatial<-CensusAPI2010Spatial(acsvariables,state.fips=c("53"),
+level="tract",key,summaryfile="ACS")
+```
+
+
+```{r,cache=FALSE} 
+WA_Census_Spatial@data$id <- rownames(WA_Census_Spatial@data)
+WA_Census_Spatial.points = fortify(WA_Census_Spatial, region="id")
+WA_Census_Spatial.df = join(WA_Census_Spatial.points, WA_Census_Spatial@data, by="id")
+```
+
+```{r, fig.width = 7 , fig.height = 7 ,fig.align='center'} 
+ggplot() +
+  geom_polygon(data = WA_Census_Spatial.df, 
+               aes(x = long, y = lat, group = group, fill = B06009_005E ), 
+               color = NA ,size = 0.1) + coord_map()+
+               ggtitle("Bachelor Degree Holders, 2010")+
+                guides(fill = guide_legend(title = "# Degree Holders", title.position = "top"))
+```
+
+## Smooth Plots
+```{r,cache=FALSE} 
+library(automap)
+```
+
+Note the following requires 'rgdal' for spatial projection.
+
+```{r}
+WA_Census_Spatial<-spTransform(WA_Census_Spatial,CRS("+proj=utm +zone=10 +datum=WGS84"))
+sp<-SpatialPointsDataFrame(coordinates(WA_Census_Spatial),data=data.frame(den=WA_Census_Spatial$P0010001/areaPoly(WA_Census_Spatial),cdh=WA_Census_Spatial$B06009_005E),proj4string=CRS(proj4string(WA_Census_Spatial)))
+atk<-autoKrige(cdh~1,sp)
+interp_data=as.data.frame(atk$krige_output)
+```
+
+```{r, fig.width = 7 , fig.height = 7 ,fig.align='center'} 
+###########
+## Map
+###########
+data(states)
+WA<-states[states$acronym=="WA",]
+WA<-spTransform(WA,CRS("+proj=utm +zone=10 +datum=WGS84"))
+map_base_data <- fortify(WA_Census_Spatial)
+map_base_data_WA <- fortify(WA)
+map_base_aesthetics <- aes(x=long, y=lat, group=group)
+map_base <- geom_polygon(data=map_base_data, map_base_aesthetics)
+borders <- geom_polygon(data=map_base_data_WA, map_base_aesthetics, 
+                        color="black",alpha =.8,size=.5,fill=NA)
+LabelData<-data.frame(coordinates(WA_Census_Spatial),NAME=WA_Census_Spatial$fips,stringsAsFactors =FALSE)
+
+nbin=40
+data_temp<-interp_data
+ggplot(data=interp_data, aes(x=x1, y=x2)) +
+  geom_tile(aes(fill=var1.pred),color=NA) +
+  stat_contour(aes(z=var1.pred),size=.3,alpha=.6,bins=nbin, color="#999999") +
+  scale_fill_gradient2(low="blue",mid="white",high="red", midpoint=mean(data_temp$var1.pred))+
+  borders+
+  #geom_point(data=longlat, aes(x=long, y=lat),alpha=.7,size=.3,color="black")+
+  #geom_text(aes(label = NAME, x = X1, y = X2),size=2,data=LabelData)+
+  theme(legend.title = element_blank(),
+        title = element_blank(),
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank())
+```
+
+
