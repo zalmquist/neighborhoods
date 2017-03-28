@@ -1,8 +1,8 @@
 ---
 title: "Spatial Analysis and Mapping Workshop"
 author: "Zack W Almquist (University of Minnesota)"
-date: "November 8, 2016"
-output: pdf_document
+date: "March 27, 2016"
+output: html_document
 ---
 
 # Preliminaries
@@ -91,7 +91,7 @@ readZillow_NB<-function(address,state,city=NULL){
   files <- list.files(zipdir)
   sp_temp<-rgdal::readOGR(dsn=zipdir,layer=strsplit(files[grep("shp",paste(files,"0",sep=""))],"\\.")[[1]][1])
   if(!is.null(city)){
-  sp_temp_city<-sp_temp[sp_temp$CITY==city,]
+  sp_temp_city<-sp_temp[sp_temp$City==city,]
   return(sp_temp_city)
   }
   sp_temp
