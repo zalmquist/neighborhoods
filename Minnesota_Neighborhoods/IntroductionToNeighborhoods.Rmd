@@ -38,6 +38,7 @@ install.packages("devtools")
 install.packages("plyr")
 install.packages("dplyr")
 install.packages("ggmap",type="source")
+install.packages("png")
 install.packages("rjson")
 install.packages("rgeos")
 ```
